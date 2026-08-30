@@ -36,6 +36,29 @@ patch_touches_protected_path() {
     grep -E '^(---|\+\+\+) [ab]/.*(keys/|secrets/|\.pem$|\.key$|\.keystore$|\.jks$|\.p12$|\.pfx$)' "$patch_file" >/dev/null
 }
 
+validate_relative_path() {
+    local kind="$1"
+    local path="$2"
+
+    [ -n "$path" ] || die "empty $kind path"
+
+    case "$path" in
+        /*|*//*)
+            die "invalid $kind path: $path"
+            ;;
+    esac
+
+    local IFS='/'
+    local component
+    for component in $path; do
+        case "$component" in
+            ''|.|..)
+                die "invalid $kind path component in: $path"
+                ;;
+        esac
+    done
+}
+
 [ -r "$CONFIG" ] || die "missing configuration: $CONFIG"
 source "$CONFIG"
 
@@ -62,14 +85,19 @@ echo
 find "$PATCH_ROOT" -type f -name '*.patch' -print0 | sort -z |
 while IFS= read -r -d '' PATCH_FILE; do
     RELATIVE="${PATCH_FILE#$PATCH_ROOT/}"
-    PROJECT="${RELATIVE%%/*}"
+    validate_relative_path "patch" "$RELATIVE"
 
-    if [ "$PROJECT" = "$RELATIVE" ]; then
+    PATCH_NAME="$(basename "$RELATIVE")"
+    PROJECT="$(dirname "$RELATIVE")"
+
+    if [ "$PROJECT" = "." ]; then
         warn "skipping malformed patch path, expected patches/graphene/<project>/<file>.patch: $PATCH_FILE"
         continue
     fi
 
-    PATCH_NAME="${RELATIVE#*/}"
+    validate_relative_path "project" "$PROJECT"
+    validate_relative_path "patch name" "$PATCH_NAME"
+
     PROJECT_DIR="$GRAPHENE_SOURCE_DIR/$PROJECT"
     refuse_signing_path "$PATCH_FILE"
 
