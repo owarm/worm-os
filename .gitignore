@@ -23,17 +23,25 @@ out/
 *.jks
 *.p12
 *.pfx
+*.asc
+*.gpg
 
 # Environment / secrets
 .env
 .env.*
 secrets/
 keys/
+credentials/
+signing/
 
 # Temporary
 tmp/
 .cache/
 
 # GrapheneOS source trees
-upstream/
-graphene-app-repo-upstream/
+/upstream/
+/grapheneos/
+/grapheneos-*/
+/graphene-app-repo-upstream/
+/aosp/
+/android/
