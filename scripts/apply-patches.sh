@@ -2,44 +2,92 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-source "$ROOT/config/frankel.conf"
+CONFIG="$ROOT/config/frankel.conf"
+
+die() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
+
+warn() {
+    echo "WARN: $*" >&2
+}
+
+refuse_signing_path() {
+    local path="$1"
+    case "$path" in
+        *"/keys"|*"/keys/"*|*"/secrets"|*"/secrets/"*|*.pem|*.key|*.keystore|*.jks|*.p12|*.pfx)
+            die "refusing to operate on signing material or secret path: $path"
+            ;;
+    esac
+}
+
+refuse_repo_path() {
+    local path="$1"
+    case "$path" in
+        "$ROOT"|"$ROOT"/*)
+            die "GrapheneOS checkout must be outside this Git repository: $path"
+            ;;
+    esac
+}
+
+patch_touches_protected_path() {
+    local patch_file="$1"
+    grep -E '^(---|\+\+\+) [ab]/.*(keys/|secrets/|\.pem$|\.key$|\.keystore$|\.jks$|\.p12$|\.pfx$)' "$patch_file" >/dev/null
+}
+
+[ -r "$CONFIG" ] || die "missing configuration: $CONFIG"
+source "$CONFIG"
 
 PATCH_ROOT="$ROOT/$WORM_PATCH_DIR"
+ROOT="$(cd "$ROOT" && pwd -P)"
+PATCH_ROOT="$(cd "$PATCH_ROOT" 2>/dev/null && pwd -P || true)"
+GRAPHENE_SOURCE_DIR="$(cd "$GRAPHENE_SOURCE_DIR" 2>/dev/null && pwd -P || true)"
 
-if [ ! -d "$GRAPHENE_SOURCE_DIR/.repo" ]; then
-    echo "ERROR: GrapheneOS source tree not found:"
-    echo "$GRAPHENE_SOURCE_DIR"
-    exit 1
-fi
+[ -n "$PATCH_ROOT" ] || die "patch directory not found: $ROOT/$WORM_PATCH_DIR"
+[ -n "$GRAPHENE_SOURCE_DIR" ] || die "GrapheneOS source tree not found"
+[ -d "$GRAPHENE_SOURCE_DIR/.repo" ] || die "GrapheneOS source tree not found: $GRAPHENE_SOURCE_DIR"
+refuse_repo_path "$GRAPHENE_SOURCE_DIR"
+refuse_signing_path "$GRAPHENE_SOURCE_DIR"
 
-if [ ! -d "$PATCH_ROOT" ]; then
-    echo "No Worm patches found."
+if ! find "$PATCH_ROOT" -type f -name '*.patch' -print -quit | grep -q .; then
+    echo "No Worm GrapheneOS patches found in $PATCH_ROOT."
     exit 0
 fi
 
-find "$PATCH_ROOT" -type f -name '*.patch' -print0 |
+echo "Applying Worm patches from $PATCH_ROOT"
+echo "GrapheneOS checkout: $GRAPHENE_SOURCE_DIR"
+echo
+
+find "$PATCH_ROOT" -type f -name '*.patch' -print0 | sort -z |
 while IFS= read -r -d '' PATCH_FILE; do
     RELATIVE="${PATCH_FILE#$PATCH_ROOT/}"
     PROJECT="${RELATIVE%%/*}"
 
     if [ "$PROJECT" = "$RELATIVE" ]; then
-        echo "Skipping malformed patch path: $PATCH_FILE"
+        warn "skipping malformed patch path, expected patches/graphene/<project>/<file>.patch: $PATCH_FILE"
         continue
     fi
 
     PATCH_NAME="${RELATIVE#*/}"
     PROJECT_DIR="$GRAPHENE_SOURCE_DIR/$PROJECT"
+    refuse_signing_path "$PATCH_FILE"
 
-    if [ ! -d "$PROJECT_DIR/.git" ]; then
-        echo "ERROR: project does not exist: $PROJECT"
-        exit 1
+    if patch_touches_protected_path "$PATCH_FILE"; then
+        die "patch touches protected signing or secret path: $PATCH_FILE"
     fi
+
+    [ -d "$PROJECT_DIR/.git" ] || die "GrapheneOS project does not exist: $PROJECT_DIR"
 
     echo "Applying: $PROJECT / $PATCH_NAME"
 
-    git -C "$PROJECT_DIR" apply \
-        --check \
-        "$PATCH_FILE"
+    if ! git -C "$PROJECT_DIR" apply --check "$PATCH_FILE"; then
+        echo
+        echo "PATCH CONFLICT: $RELATIVE"
+        echo "The patch did not apply cleanly to upstream GrapheneOS."
+        echo "Review upstream changes and refresh the patch manually; it was not force-applied."
+        exit 1
+    fi
 
     git -C "$PROJECT_DIR" apply \
         "$PATCH_FILE"
