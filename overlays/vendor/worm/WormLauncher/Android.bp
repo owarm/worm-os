@@ -1,0 +1,13 @@
+android_app_import {
+    name: "WormLauncher",
+    product_specific: true,
+    apk: "prebuilt/WormLauncher.apk",
+    presigned: true,
+    preprocessed: true,
+    privileged: false,
+
+    optional_uses_libs: [
+        "androidx.window.extensions",
+        "androidx.window.sidecar",
+    ],
+}

@@ -1,0 +1,38 @@
+From 1f31a844ea4636cd8de0c086b719f9f6315038df Mon Sep 17 00:00:00 2001
+From: worm OS <build@worm.estixari.com>
+Date: Fri, 28 Aug 2026 17:10:11 +0200
+Subject: [PATCH] worm OS: use worm update server
+
+---
+ res/values/config.xml               | 2 +-
+ res/xml/network_security_config.xml | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/res/values/config.xml b/res/values/config.xml
+index b3804bb..6e456b7 100644
+--- a/res/values/config.xml
++++ b/res/values/config.xml
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+-    <string name="url" translatable="false">https://releases.grapheneos.org/</string>
++    <string name="url" translatable="false">https://worm.estixari.com/releases/</string>
+     <string name="channel_default" translatable="false">stable</string>
+     <string name="network_type_default" translatable="false">1</string>
+     <string name="battery_not_low_default" translatable="false">true</string>
+diff --git a/res/xml/network_security_config.xml b/res/xml/network_security_config.xml
+index 95bafb3..148c30e 100644
+--- a/res/xml/network_security_config.xml
++++ b/res/xml/network_security_config.xml
+@@ -2,7 +2,7 @@
+ <network-security-config>
+     <base-config cleartextTrafficPermitted="false"/>
+     <domain-config>
+-        <domain includeSubdomains="true">releases.grapheneos.org</domain>
++        <domain includeSubdomains="true">worm.estixari.com</domain>
+         <!-- expiration is updated monthly to be approximately 3 months ahead -->
+         <pin-set expiration="2026-10-01">
+             <!-- ISRG Root X1 -->
+-- 
+2.47.3
+

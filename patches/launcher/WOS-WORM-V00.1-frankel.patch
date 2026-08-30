@@ -1,0 +1,9 @@
+--- /tmp/frankel.worm.before	2026-08-26 18:01:59.672471794 +0200
++++ /opt/Android/worm-os/upstream/vendor/google_devices/frankel/frankel.mk	2026-08-26 18:01:59.676471917 +0200
+@@ -4821,3 +4821,6 @@
+ # worm OS: keep Pixel early boot branding and disable Android boot animation.
+ PRODUCT_SYSTEM_PROPERTIES += \
+     debug.sf.nobootanimation=1
++
++# worm OS: preinstall worm launcher on Pixel 10 / frankel.
++PRODUCT_PACKAGES += WormLauncher

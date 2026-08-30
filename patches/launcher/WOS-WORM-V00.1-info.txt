@@ -1,0 +1,15 @@
+project=worm OS
+milestone=WOS-WORM-V00.1
+device=Pixel 10
+codename=frankel
+
+module=WormLauncher
+package=com.worm
+source=/opt/Android/worm
+apk=/opt/Android/worm/app/build/outputs/apk/release/app-release.apk
+
+preinstalled=true
+default_home=not_forced_yet
+Launcher3=fallback_kept
+
+phone=not_touched

@@ -1,0 +1,39 @@
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android / Gradle
+.gradle/
+build/
+out/
+*.apk
+*.aab
+
+# Signing / credentials
+*.pem
+*.key
+*.keystore
+*.jks
+*.p12
+*.pfx
+
+# Environment / secrets
+.env
+.env.*
+secrets/
+keys/
+
+# Temporary
+tmp/
+.cache/
+
+# GrapheneOS source trees
+upstream/
+graphene-app-repo-upstream/

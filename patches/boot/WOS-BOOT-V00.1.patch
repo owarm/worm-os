@@ -1,0 +1,10 @@
+--- /tmp/frankel.mk.before	2026-08-26 17:43:26.785527338 +0200
++++ vendor/google_devices/frankel/frankel.mk	2026-08-26 17:43:26.789527467 +0200
+@@ -4817,3 +4817,7 @@
+     vendor/google_devices/frankel/proprietary/vendor/etc/memory-limiter-config.xml:$(TARGET_COPY_OUT_VENDOR)/etc/memory-limiter-config.xml \
+     vendor/google_devices/frankel/proprietary/vendor/etc/modem/default_metrics.xml:$(TARGET_COPY_OUT_VENDOR)/etc/modem/default_metrics.xml \
+     vendor/google_devices/frankel/proprietary/vendor/etc/wifi/coex_table.xml:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/coex_table.xml
++
++# worm OS: keep Pixel early boot branding and disable Android boot animation.
++PRODUCT_SYSTEM_PROPERTIES += \
++    debug.sf.nobootanimation=1
